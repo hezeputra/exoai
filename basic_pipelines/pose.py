@@ -20,7 +20,16 @@ from hailo_apps.hailo_app_python.apps.pose_estimation.pose_estimation_pipeline i
 # -----------------------------------------------------------------------------------------------
 # Global Setup
 # -----------------------------------------------------------------------------------------------
+from fastapi.middleware.cors import CORSMiddleware
+
 app_fastapi = FastAPI()
+app_fastapi.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 user_data = None  # will be initialized later
 
 # Skeleton pairs for drawing lines between keypoints
@@ -158,6 +167,16 @@ def video_feed():
                            b"Content-Type: image/jpeg\r\n\r\n" + jpeg.tobytes() + b"\r\n")
             time.sleep(0.03)  # ~30 FPS
     return StreamingResponse(generate(), media_type="multipart/x-mixed-replace; boundary=frame")
+
+# --- ADD THIS ENDPOINT FOR FRONTEND DATA FETCHING ---
+@app_fastapi.get("/pose/detection")
+def get_pose_detection():
+    frame, keypoints_data = user_data.get_pose_data()
+    return {
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "keypoints": keypoints_data if keypoints_data else [],
+        "personCount": len(keypoints_data) if keypoints_data else 0
+    }
 
 # -----------------------------------------------------------------------------------------------
 # Start FastAPI and GStreamer app
