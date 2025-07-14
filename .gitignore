@@ -165,3 +165,5 @@ venv_hailo_rpi5_examples/*
 resources/*.mp4
 resources/*.hef
 resources/*.stores
+
+venv_hailo_rpi_examples
